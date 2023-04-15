@@ -1,0 +1,726 @@
+esphome:
+  name: esp-hru400
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+  level: DEBUG
+  #level: VERY_VERBOSE
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret HRU400_apikey
+
+ota:
+  password: !secret HRU400_OTA_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp-Hru400 Fallback Hotspot"
+    password: !secret HRU400_AP_password
+
+captive_portal:
+
+
+modbus:
+  - id: modbus_hru
+    uart_id: uart_modbus_hru
+  
+uart:
+  - id: uart_modbus_hru
+    tx_pin: GPIO19
+    rx_pin: GPIO18
+    baud_rate: 19200
+    parity: even
+    data_bits: 8
+    stop_bits: 1
+  
+modbus_controller:
+  - id: hru
+    address: 72 # the Modbus device addr, was 0x1
+    modbus_id: modbus_hru
+    update_interval: 20s
+    setup_priority: -10
+    command_throttle: 200ms
+  
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU modbus-adres"
+    id: hru_modbusadres
+    register_type: holding
+    address: 0 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU baud rate"
+    id: hru_baudrate
+    register_type: holding
+    address: 1 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU pariteit"
+    id: hru_pariteit
+    register_type: holding
+    address: 2 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU softwareversie"
+    id: hru_softwareversie
+    register_type: holding
+    address: 13 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU software revisie"
+    id: hru_softwarerevisie
+    register_type: holding
+    address: 14 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU lijstversie"
+    id: hru_lijstversie
+    register_type: holding
+    address: 15 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU OEM code"
+    id: hru_oemcode
+    register_type: holding
+    address: 16 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "HRU serienr"
+    id: hru_serienr
+    register_type: holding
+    address: 100 # 0x000E
+    value_type: U_QWORD
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "foutnummer"
+    id: hru_foutnummer
+    register_type: holding
+    address: 199 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "errornr"
+
+# error registers for now configured as read-only, but they are R/W
+# error registers for now configured as read-only, but they are R/W
+
+# bunch of registers not connected
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "highest % toevoer automode"
+    id: hru_toevoer_maxperc
+    register_type: holding
+    address: 3000 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "highest % afvoer automode"
+    id: hru_afvoer_maxperc
+    register_type: holding
+    address: 3001 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "highest % RV non-fan"
+    id: hru_RV_ext_maxperc
+    register_type: holding
+    address: 3010 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "highest ppm CO2 non-fan"
+    id: hru_co2_maxperc
+    register_type: holding
+    address: 3011 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "ppm"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "snelheid toevoerventilator"
+    id: hru_rpm_toevoerventilator
+    register_type: holding
+    address: 3020 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "rpm"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "snelheid afvoerventilator"
+    id: hru_rpm_afvoerventilator
+    register_type: holding
+    address: 3021 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "rpm"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "power toevoerventilator"
+    id: hru_pwr_toevoerventilator
+    register_type: holding
+    address: 3022 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "W"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "power afvoerventilator"
+    id: hru_pwr_afvoerventilator
+    register_type: holding
+    address: 3023 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "W" 
+  # - platform: modbus_controller
+  #   modbus_controller_id: hru
+  #   name: "zonekleppen aangesloten"
+  #   id: hru_kleppen_connected
+  #   register_type: holding
+  #   address: 3024 # 0x000E
+  #   value_type: U_WORD
+  #   skip_updates: 10
+  #   # bitmask: 0x00 #(bit 0)
+  #   # Modbus error - last command: function code=0x3  register address = 0xBCC  registers count=5 payload size=0 (idem met uitlezen op dit register register count=1 payload size =0)
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h toevoer van buiten"
+    id: hru_m3h_toevoer_external
+    register_type: holding
+    address: 3030 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller # 0x91 type, signed 16bit/10
+    modbus_controller_id: hru
+    name: "temp toevoer van buiten"
+    id: hru_temp_toevoer_external
+    register_type: holding
+    address: 3032 # 0x000E
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "°C"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "humidity toevoer van buiten"
+    id: hru_hum_toevoer_external
+    register_type: holding
+    address: 3033 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h toevoer via vorstklep"
+    id: hru_m3h_vorstklep
+    register_type: holding
+    address: 3040 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h toevoer gemengd"
+    id: hru_m3h_toevoer_gemengd
+    register_type: holding
+    address: 3050 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller # 0x91 type, signed 16bit/10
+    modbus_controller_id: hru
+    name: "temp toevoer gemengd"
+    id: hru_temp_toevoer_gemengd
+    register_type: holding
+    address: 3052 # 0x000E
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "°C"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "humidity toevoer gemengd"
+    id: hru_hum_toevoer_gemengd
+    register_type: holding
+    address: 3053 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h toevoer binnen totaal"
+    id: hru_m3h_toevoer_binnen_total
+    register_type: holding
+    address: 3060 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller # 0x91 type, signed 16bit/10
+    modbus_controller_id: hru
+    name: "temp toevoer binnen"
+    id: hru_temp_toevoer_binnen
+    register_type: holding
+    address: 3062 # 0x000E
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "°C"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "humidity toevoer naar gebouw"
+    id: hru_hum_toevoer_binnen
+    register_type: holding
+    address: 3063 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h afvoer totaal"
+    id: hru_m3h_afvoer_binnen
+    register_type: holding
+    address: 3070 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller # 0x91 type, signed 16bit/10
+    modbus_controller_id: hru
+    name: "temp afvoer binnen"
+    id: hru_temp_afvoer_binnen
+    register_type: holding
+    address: 3072 # 0x000E
+    value_type: S_WORD
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "°C"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "humidity afvoer binnen"
+    id: hru_hum_afvoer_binnen
+    register_type: holding
+    address: 3073 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    filters:
+      - or:
+          - delta: 1
+          - heartbeat: 60s
+      - lambda: 
+          float rand1 = rand() % 1;        
+          return x + rand1;
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h afvoer buiten"
+    id: hru_m3h_afvoer_buiten
+    register_type: holding
+    address: 3080 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller # 0x91 type, signed 16bit/10
+    modbus_controller_id: hru
+    name: "temp afvoer buiten"
+    id: hru_temp_afvoer_buiten
+    register_type: holding
+    address: 3082 # 0x000E
+    value_type: S_WORD
+    filters:
+    - multiply: 0.1
+    unit_of_measurement: "°C"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "humidity afvoer buiten"
+    id: hru_hum_afvoer_buiten
+    register_type: holding
+    address: 3083 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "%"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h ask leefzone"
+    id: hru_m3h_ask_zone1
+    register_type: holding
+    address: 3200 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h ask slaapzone"
+    id: hru_m3h_ask_zone2
+    register_type: holding
+    address: 3201 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h ask natte zone" #now set to 78-260
+    id: hru_m3h_ask_zone3
+    register_type: holding
+    address: 3202 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h ask kookzone" # now set to 27-90
+    id: hru_m3h_ask_zone4
+    register_type: holding
+    address: 3203 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h ask zone 5"
+    id: hru_m3h_ask_zone5
+    register_type: holding
+    address: 3204 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "m3/h"
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "levensduur teller deel 1"
+    id: lifetime_counter_part1
+    register_type: holding
+    address: 4000 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "h"
+    skip_updates: 10
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "levensduur teller deel 2"
+    id: lifetime_counter_part2
+    register_type: holding
+    address: 4001 # 0x000E
+    value_type: U_WORD
+    unit_of_measurement: "h"
+    skip_updates: 10
+
+number:
+# several numbers not connected
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag leef? zone"
+    min_value: 0
+    max_value: 399
+    step: 1
+    id: hru_zone1ask
+    register_type: holding
+    address: 2210 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag leef? zone on/off"
+    min_value: 0
+    max_value: 1
+    step: 1
+    id: hru_zone1ask_enable
+    register_type: holding
+    address: 2211 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag slaap? zone"
+    min_value: 0
+    max_value: 399
+    step: 1
+    id: hru_zone2ask
+    register_type: holding
+    address: 2212 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag slaap? zone on/off"
+    min_value: 0
+    max_value: 1
+    step: 1
+    id: hru_zone2ask_enable
+    register_type: holding
+    address: 2213 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag natte zone"
+    min_value: 0
+    max_value: 399
+    step: 1
+    id: hru_zone3ask
+    register_type: holding
+    address: 2214 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag natte zone on/off"
+    min_value: 0
+    max_value: 1
+    step: 1
+    id: hru_zone3ask_enable
+    register_type: holding
+    address: 2215 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag kook? zone"
+    min_value: 0
+    max_value: 399
+    step: 1
+    id: hru_zone4ask
+    register_type: holding
+    address: 2216 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "m3/h vraag kook? zone on/off"
+    min_value: 0
+    max_value: 1
+    step: 1
+    id: hru_zone4ask_enable
+    register_type: holding
+    address: 2217 # 0x000E
+    value_type: U_WORD
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 1 aantal"
+    id: HRU_errors1
+    register_type: holding
+    address: 200 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 2 aantal"
+    id: HRU_errors2
+    register_type: holding
+    address: 201 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 3 aantal"
+    id: HRU_errors3
+    register_type: holding
+    address: 202 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 4 aantal"
+    id: HRU_errors4
+    register_type: holding
+    address: 203 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 11 aantal"
+    id: HRU_errors11
+    register_type: holding
+    address: 210 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 12 aantal"
+    id: HRU_errors12
+    register_type: holding
+    address: 211 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 13 aantal"
+    id: HRU_errors13
+    register_type: holding
+    address: 212 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 14 aantal"
+    id: HRU_errors14
+    register_type: holding
+    address: 213 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 15 aantal"
+    id: HRU_errors15
+    register_type: holding
+    address: 214 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 16 aantal"
+    id: HRU_errors16
+    register_type: holding
+    address: 215 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 17 aantal"
+    id: HRU_errors17
+    register_type: holding
+    address: 216 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 18 aantal"
+    id: HRU_errors18
+    register_type: holding
+    address: 217 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 19 aantal"
+    id: HRU_errors19
+    register_type: holding
+    address: 218 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 20 aantal"
+    id: HRU_errors20
+    register_type: holding
+    address: 219 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 21 aantal"
+    id: HRU_errors21
+    register_type: holding
+    address: 220 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 22 aantal"
+    id: HRU_errors22
+    register_type: holding
+    address: 221 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 23 aantal"
+    id: HRU_errors23
+    register_type: holding
+    address: 222 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 31 aantal"
+    id: HRU_errors31
+    register_type: holding
+    address: 230 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 32 aantal"
+    id: HRU_errors32
+    register_type: holding
+    address: 231 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 33 aantal"
+    id: HRU_errors33
+    register_type: holding
+    address: 232 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+  - platform: modbus_controller
+    modbus_controller_id: hru
+    name: "fout 34 aantal"
+    id: HRU_errors34
+    register_type: holding
+    address: 233 # 0x000E
+    value_type: U_WORD
+    skip_updates: 10
+    use_write_multiple: true
+
+# binary_sensor:
+
+  ## somehow I cannot get these to read out, but fortunately they're not variable, so not essential.
+
+  # - platform: modbus_controller
+  #   modbus_controller_id: hru
+  #   name: "zoneklep1 aangesloten"
+  #   id: hru_klep1_connected
+  #   register_type: holding
+  #   skip_updates: 10
+  #   address: 3024 # 0x000E
+  #   bitmask: 0x0 #(bit 0)
+  # - platform: modbus_controller
+  #   modbus_controller_id: hru
+  #   name: "zoneklep1 aangesloten"
+  #   id: hru_klep2_connected
+  #   register_type: holding
+  #   skip_updates: 10
+  #   address: 3024 # 0x000E
+  #   bitmask: 0x1 #(bit 1)
+  # - platform: modbus_controller
+  #   modbus_controller_id: hru
+  #   name: "zoneklep1 aangesloten"
+  #   id: hru_klep3_connected
+  #   register_type: holding
+  #   skip_updates: 10
+  #   address: 3024 # 0x000E
+  #   bitmask: 0x2 #(bit 2)
+  # - platform: modbus_controller
+  #   modbus_controller_id: hru
+  #   name: "zoneklep1 aangesloten"
+  #   id: hru_klep4_connected
+  #   register_type: holding
+  #   skip_updates: 10
+  #   address: 3024 # 0x000E
+  #   bitmask: 0x3 #(bit 3)
